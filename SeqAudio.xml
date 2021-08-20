@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<voicemail>
+  <!-- innovaphone Sequential Audio Announcer == innovaphone AG V10.00 KWA 2014 -->
+  
+  <function define="Rekursiv">
+	<assign out="$pin-ok" value="false"/>	
+ 	<assign out="$res" value="0"/>
+	<store-getstat root="" name="TMP/Rekur.txt" out-error="$error" out-mday="$mday" out-mon="$mon" out-year="$year" out-hour="$hour" out-min="$min"/>
+	<switch var="$error">
+            <case equal="2">
+		<return/>
+       	    </case>
+	    <case not-equal="2">
+		 <store-getstat root="" name="NULL" out-mday="$Nmday" out-mon="$Nmon" out-year="$Nyear" out-hour="$Nhour" out-min="$Nmin"/>
+		 <switch var="$year">
+			<case not-equal="$Nyear">
+				<return/>
+       		        </case>
+	         </switch>
+		 <switch var="$hour">
+			<case not-equal="$Nhour">
+				<return/>
+       		        </case>
+	         </switch>
+		 <switch var="$mday">
+			<case not-equal="$Nmday">
+				<return/>
+       		        </case>
+	         </switch>
+		 <switch var="$min">
+			<case greater-equal="$Nmin">
+				<sub value="$min" value2="$Nmin" out="$res"/> 
+			</case>
+			<case less="$Nmin">
+				<sub value="$Nmin" value2="$min" out="$res"/> 
+			</case>
+		 </switch>
+	    </case>
+       </switch>
+       <switch var="$res">
+	       	<case greater="2">
+			<return/>
+	   	</case>
+       </switch>
+	<while notcond="$pin-ok">
+	       <store-get root="" name="ChannelBusy.$coder" out-url="$ctrl"/>
+	       <pbx-prompt url="$ctrl"  repeat="false"/>
+	       <wait sec="1"/>
+ 	       <store-getstat root="" name="TMP/Rekur.txt" out-error="$error" />
+	       <switch var="$error">
+	            <case equal="2">
+			<return/>
+        	    </case>
+	       </switch>
+	</while>
+  </function>
+
+  <function define="Main">
+	<store-getstat root="TMP" name="/" out-error="$error"/>
+	<switch var="$error">
+            <case not-equal="0">
+		 <store-mkdir root="" name="TMP/"/>
+            </case>
+        </switch>
+	<store-getstat root="AUD" name="/" out-error="$error"/>
+	<switch var="$error">
+            <case not-equal="0">
+		 <store-mkdir root="" name="AUD/"/>
+            </case>
+        </switch>
+	<store-getstat root="PLY" name="/" out-error="$error"/>
+	<switch var="$error">
+            <case not-equal="0">
+		 <store-mkdir root="" name="PLY/"/>
+            </case>
+        </switch>
+	<pbx-getcallinfo out-cgpn="$cgpn" out-cdpn="$cdpn" />
+	<lib-strcat out-string="$Track" string="Track" string2="$cgpn"/>	
+	<lib-strcat out-string="$Track" string="$Track" string2=".g711a"/>
+	<store-getstat root="AUD" name="$Track" out-error="$error"/>
+	<switch var="$error">
+            <case not-equal="0">
+		  <store-get root="" name="NoAudio.$coder" out-url="$ctrl"/>
+		  <pbx-prompt url="$ctrl" sec="1" repeat="false"/>
+		  <pbx-disc/>
+       	    </case>
+        </switch>
+	<event type="timer" name="vbguard">
+		<pbx-disc/>     
+	</event>
+	<timer name="vbguard" sec="30" />
+	<call name="Rekursiv"/>
+	<store-cookie root="" name="TMP/Rekur.txt" value="1"/>
+	<event type="timer" name="vbguard">
+		<pbx-disc/>     
+	</event>
+	<timer name="vbguard" sec="2" />
+	<store-cookie root="PLY" name="$Track" value=""/>
+	<store-cookie root="" name="SetupConf.txt" out="$dest"/>
+	<pbx-fwd e164="$dest" />
+  </function>
+</voicemail>
+<!-- External_Announce wiki-src/xml/Ext_Ann 1,0,0,0 (C) innovaphone AG 2010-2014 -->

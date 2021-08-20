@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<voicemail>
+  <!-- innovaphone Sequential Audio Announcer == innovaphone AG V10.00 KWA 2014 -->
+
+  <function define="Main">
+	<store-get root="" name="Beep.g711a" out-url="$ctrl"/>
+	<pbx-prompt url="$ctrl" sec="5" repeat="false"/>
+	<store-cookie root="" name="SetupDest.txt" out="$MyUser"/>	
+	<pbx-fwd e164="$MyUser" out-cause="$cause" sec="10" barge-in="true"/>	
+  </function>
+
+</voicemail>
+<!-- External_Announce wiki-src/xml/Ext_Ann 1,0,0,0 (C) innovaphone AG 2010-2014 -->

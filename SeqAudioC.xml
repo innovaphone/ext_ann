@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<voicemail>
+  <!-- innovaphone Sequential Audio Announcer == innovaphone AG V10.00 KWA 2014 -->
+
+  
+  <function define="PlayAll">
+	<store-getnext root="PLY" out-handle="$handle" out-url="$message"/> 
+	<store-split url="$message"  out-file="$MyAudio" />
+	<store-get root="AUD" name="$MyAudio" out-url="$ctrl"/>
+	<pbx-prompt url="$ctrl" repeat="false"/> 
+	<wait sec="1"/>
+	<store-del root="" name="$message"/>
+  </function>
+
+  <function define="LogWrite">
+	<assign out="$mres" value=""/>
+	<store-getstat root="" name="NULL"  out-year="$year" out-mon="$mon" out-mday="$mday" out-hour="$hour" out-min="$min"/>
+	<lib-strlen out="$mres" string="$mon"/> 
+	<switch var="$mres">
+  	   <case equal="1"> 
+               <lib-strcat out-string="$mon" string="0" string2="$mon"/>
+           </case>
+	</switch>
+	<lib-strlen out="$mres" string="$mday"/> 
+	<switch var="$mres">
+  	   <case equal="1"> 
+               <lib-strcat out-string="$mday" string="0" string2="$mday"/>
+           </case>
+	</switch>
+	<lib-strlen out="$mres" string="$hour"/> 
+	<switch var="$mres">
+  	   <case equal="1"> 
+               <lib-strcat out-string="$hour" string="0" string2="$hour"/>
+           </case>
+	</switch>
+	<lib-strlen out="$mres" string="$min"/> 
+	<switch var="$mres">
+  	   <case equal="1"> 
+               <lib-strcat out-string="$min" string="0" string2="$min"/>
+           </case>
+	</switch>
+        <lib-strcat out-string="$mres" string="$year" string2="_"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="$mon"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="_"/>	
+	<lib-strcat out-string="$mres" string="$mres" string2="$mday"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="_"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="$hour"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="_"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="$min"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="_"/>
+	<lib-strcat out-string="$mres" string="$mres" string2="$MyAudio"/>
+	<lib-strcat out-string="$lres" string="LOG/" string2="$mres"/>
+	
+        
+  </function>
+
+  <function define="Main">
+	<event type="timer" name="vbguard">
+		<store-del root="" name="TMP/Rekur.txt"/>
+		<pbx-disc/>     
+	</event>
+	<timer name="vbguard" sec="60" />
+	<event type="call-end">
+		<store-cookie root="" name="$lres" value=""/>
+		<store-del root="" name="TMP/Rekur.txt"/>
+	</event>
+	<store-get root="" name="silence.g711a" out-url="$ctrl"/>
+	<pbx-prompt url="$ctrl" sec="3" repeat="false"/>
+	<call name="PlayAll"/>
+	<call name="LogWrite"/>
+	<store-del root="" name="TMP/Rekur.txt"/>
+	<pbx-disc/>	
+  </function>
+</voicemail>
+<!-- External_Announce wiki-src/xml/Ext_Ann 1,0,0,0 (C) innovaphone AG 2010-2014 -->
